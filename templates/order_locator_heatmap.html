@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Store Locator</title>
+	<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
+	<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.css' rel='stylesheet' />
+	<link type="text/css" rel="stylesheet" href="{{url_for('static', filename='css/order_locator.css') }}" />
+</head>
+<body>
+	<div class='sidebar pad2'>Listing</div>
+	<div id='map' class='map pad2'>Map</div>
+</body>
+<script type="text/javascript">
+	mapboxgl.accessToken = 'pk.eyJ1IjoiZWdhcmNpYWxvcGV6IiwiYSI6ImhtOTB1cHcifQ.X36jmPbivQRGhgAh02oc-A';
+	var map = new mapboxgl.Map({
+		container: 'map',
+		style: 'mapbox://styles/mapbox/dark-v9',
+		center: [-3.707398, 40.415363],
+		zoom: 9
+		});
+
+	var orders = {{geo_features|tojson|safe}};
+
+	map.on('load', function(e) {
+
+		map.addSource('orders', {
+		type: 'geojson',
+		data: orders,
+		cluster: true,
+        clusterMaxZoom: 15, // Max zoom to cluster points on
+        clusterRadius: 10
+		});
+
+		var layers = [
+        [0, '#90EE90'],
+        [10, '#FFD700'],
+        [30, '#B22222']];
+
+		layers.forEach(function (layer, i) {
+        map.addLayer({
+            "id": "cluster-" + i,
+            "type": "circle",
+            "source": "orders",
+            "paint": {
+                "circle-color": layer[1],
+                "circle-radius": 30,
+                "circle-blur": 0.5 // blur the circles to get a heatmap look
+            },
+            "filter": i === layers.length - 1 ?
+                [">=", "point_count", layer[0]] :
+                ["all",
+                    [">=", "point_count", layer[0]],
+                    ["<", "point_count", layers[i + 1][0]]]
+        },'waterway-label');
+    });
+
+    map.addLayer({
+        "id": "unclustered-points",
+        "type": "circle",
+        "source": "orders",
+        "paint": {
+            "circle-color": '#006400',
+            "circle-radius": 5,
+            "circle-blur": 0.7
+        },
+        "filter": ["!=", "cluster", true]
+    },'waterway-label');
+
+	});
+</script>
+
+</html>
+
+
+

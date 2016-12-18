@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Store Locator</title>
+	<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
+	<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.css' rel='stylesheet' />
+	<link type="text/css" rel="stylesheet" href="{{url_for('static', filename='css/order_locator.css') }}" />
+</head>
+<body>
+	<div class='sidebar pad2'>Listing</div>
+	<div id='map' class='map pad2'>Map</div>
+</body>
+<script type="text/javascript">
+	mapboxgl.accessToken = 'pk.eyJ1IjoiZWdhcmNpYWxvcGV6IiwiYSI6ImhtOTB1cHcifQ.X36jmPbivQRGhgAh02oc-A';
+	var map = new mapboxgl.Map({
+		container: 'map',
+		style: 'mapbox://styles/egarcialopez/ciwjaxg2n00382pqp0we2m61j',
+		center: [-3.707398, 40.415363],
+		zoom: 9
+		});
+
+	var orders = {{geo_features|tojson|safe}};
+
+	map.on('load', function(e) {
+
+		map.addSource('orders', {
+		type: 'geojson',
+		data: orders
+		});
+
+		map.addLayer({
+        'id': 'orders_location',
+        'type': 'circle',
+        'source': 'orders',
+        'layout': {
+            'visibility': 'visible'},
+        'paint': {
+            'circle-radius': {
+            	'base': 1.75,
+                'stops': [[8, 1], [11, 6], [16, 40]]},
+            'circle-color': {
+            	property: 'value',
+            	stops:[[90.0,'#FFDAB9'],[170.0,'#98FB98'],[250.0,'#F08080']]},
+            'circle-blur':1
+            },
+    	});
+
+	});
+</script>
+
+</html>
+
+
+
